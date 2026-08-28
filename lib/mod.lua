@@ -1,5 +1,5 @@
 local mod  = require 'core/mods'
-local hook = require 'core/hook'
+local hook = require 'core/hook' -- FIXME is this include necessary?
 local nb   = require 'nb/lib/nb'
 local s    = require 'sequins'
 local TulpamancerVice = require 'tulpamancer/lib/tulpamancervice'
@@ -19,7 +19,7 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
     params:add_binary('nb_tulpamancer_play', "play", 'toggle')
     params:set_action('nb_tulpamancer_play', function(v)
        if v == 1 then
-           print("tulpa is "..print(TulpamancerVice.tulpa_binary)
+           print("tulpa is "..TulpamancerVice.tulpa_binary)
 
            params:lookup_param('tulpamancer_player').name = "tulpa "..TulpamancerVice.tulpa_binary
 
@@ -31,7 +31,7 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
 
            tulpa_clock = clock.run(function()
                  while true do
-                    clock.sync(1/16 * params:get('nb_tulpamancer_clock_div')) -- TODO would be better than throttling the sequins
+                    clock.sync(1/16 * params:get('nb_tulpamancer_clock_div'))
                     local step = tulpa_seq()
                     if step == 1 then
                        p:note_on(params:get('nb_tulpamancer_note'), 1)
@@ -39,7 +39,7 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
                     end
                  end
            end)
-           
+
            -- TODO setup sequencer
            -- TODO start sequencer
         elseif v == 0 then
@@ -56,5 +56,5 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
 end)
 
 -- Local Variables:
--- flycheck-luacheck-standards ("lua51", "norns")
+-- flycheck-luacheck-standards: ("lua51" "norns")
 -- End:
