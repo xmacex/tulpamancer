@@ -34,17 +34,19 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
 
         tulpa_clock = clock.run(function()
           while true do
-            clock.sync(1/16 * params:get('nb_tulpamancer_clock_div'))
+	    local mult = params:get('nb_tulpamancer_clock_div')
+	    if mult <= 0 then
+	       mult = 1/math.abs(mult-2)
+	    end
+            clock.sync(math.pow(mult, -1))
             local step = tulpa_seq()
             if step == 1 then
               p:note_on(params:get('nb_tulpamancer_note'), 1)
-                     -- TODO note off
+	      -- TODO note off
             end
           end
         end)
       end
-      -- TODO setup sequencer
-      -- TODO start sequencer
     elseif v == 0 then
       params:lookup_param('tulpamancer_player').name = SEPARATOR_NAME
       clock.cancel(tulpa_clock)
@@ -56,7 +58,13 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
   params:add_control('nb_tulpamancer_note', 'note', controlspec.MIDINOTE)
   params:set('nb_tulpamancer_note', 64)
   params:lookup_param('nb_tulpamancer_note').formatter = function(p) return math.floor(params:get(p.id)) end
-  params:add_number('nb_tulpamancer_clock_div', "clock div", 1, 16, 4) --, function(p) return "1/"..p.value end)
+  params:add_number('nb_tulpamancer_clock_div', "clock div", -14, 16, 1, function(p)
+    if p.value <= 0 then
+      return "/"..math.abs(p.value)+2
+    else
+      return "*"..p.value
+    end
+  end)
 end)
 
 -- Local Variables:
