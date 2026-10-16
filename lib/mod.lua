@@ -41,8 +41,14 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
             clock.sync(math.pow(mult, -1))
             local step = tulpa_seq()
             if step == 1 then
-              p:note_on(params:get('nb_tulpamancer_note'), 1)
-	      -- TODO note off
+	      if p.name:find("midi: virtual", 1, true) == 1 then -- the virtual MIDI devices. See here https://llllllll.co/t/virtual-midi-port-not-producing-sound-in-any-script/75419/3
+		local msg = {type="note_on", note=params:get('nb_tulpamancer_note'), vel=100, ch=1}
+		midi.vports[p.conn.device.port].event(midi.to_data(msg))
+		-- TODO note off
+	      else
+                p:note_on(params:get('nb_tulpamancer_note'), 1)
+		-- TODO note off
+	      end
             end
           end
         end)
