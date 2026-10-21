@@ -33,37 +33,34 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
         local p = params:lookup_param('nb_tulpamancer_voice'):get_player()
 
         tulpa_clock = clock.run(function()
-	  while true do
-	    local function note_off(player, note, virtual)
-	      clock.sync(1/16) -- TODO reconsider note length, polyphony vs monophony
-	      if virtual then
-		local msg = {type="note_off", note=note, vel=0, ch=1}
-		midi.vports[p.conn.device.port].event(midi.to_data(msg))
-	      else
-		player:note_off(note, 0)
-	      end
+	  local function note_off(player, note)
+	    clock.sync(1/16) -- TODO reconsider note length, polyphony vs monophony
+	    if player.name:find("midi: virtual", 1, true) == 1 then
+	       local msg = {type="note_off", note=note, vel=0, ch=1}
+	       midi.vports[player.conn.device.port].event(midi.to_data(msg))
+	    else
+	       player:note_off(note, 0)
 	    end
+	  end
 
-	    -- local mult = params:get('nb_tulpamancer_clock_div')
-	    -- if mult <= 0 then
-	    --    mult = 1/math.abs(mult-2)
-	    -- end
-            -- clock.sync(math.pow(mult, -1))
+	  local function note_on(player, note)
+	    if player.name:find("midi: virtual", 1, true) == 1 then
+	      local msg = {type="note_on", note=note, vel=100, ch=1}
+	      midi.vports[player.conn.device.port].event(midi.to_data(msg))
+	    else
+	      player:note_on(note, 1)
+	    end
+	    note_off(player, note)
+	  end
+
+	  while true do
 	    clock.sync(1/params:get('nb_tulpamancer_clock_div'))
 
             local step = tulpa_seq()
-
             if step == 1 then
-	      if p.name:find("midi: virtual", 1, true) == 1 then -- the virtual MIDI devices. See here https://llllllll.co/t/virtual-midi-port-not-producing-sound-in-any-script/75419/3
-		local msg_on = {type="note_on",  note=params:get('nb_tulpamancer_note'), vel=100, ch=1}
-		midi.vports[p.conn.device.port].event(midi.to_data(msg_on))
-		note_off(p, params:get('nb_tulpamancer_note'), true)
-	      else
-                p:note_on(params:get('nb_tulpamancer_note'), 1)
-		note_off(p, params:get('nb_tulpamancer_note'))
-	      end
-            end
-          end
+	      note_on(p, params:get('nb_tulpamancer_note'))
+	    end
+	  end
         end)
       end
     elseif v == 0 then
