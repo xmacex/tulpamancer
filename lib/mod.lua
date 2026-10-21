@@ -44,11 +44,12 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
 	      end
 	    end
 
-	    local mult = params:get('nb_tulpamancer_clock_div')
-	    if mult <= 0 then
-	       mult = 1/math.abs(mult-2)
-	    end
-            clock.sync(math.pow(mult, -1))
+	    -- local mult = params:get('nb_tulpamancer_clock_div')
+	    -- if mult <= 0 then
+	    --    mult = 1/math.abs(mult-2)
+	    -- end
+            -- clock.sync(math.pow(mult, -1))
+	    clock.sync(1/params:get('nb_tulpamancer_clock_div'))
 
             local step = tulpa_seq()
 
@@ -76,13 +77,7 @@ mod.hook.register('script_post_init', 'tulpamancer post init', function()
   params:add_control('nb_tulpamancer_note', 'note', controlspec.MIDINOTE)
   params:set('nb_tulpamancer_note', 64)
   params:lookup_param('nb_tulpamancer_note').formatter = function(p) return math.floor(params:get(p.id)) end
-  params:add_number('nb_tulpamancer_clock_div', "clock div", -14, 16, 1, function(p)
-    if p.value <= 0 then
-      return "/"..math.abs(p.value)+2
-    else
-      return "*"..p.value
-    end
-  end)
+  params:add_number('nb_tulpamancer_clock_div', "clock div", 1, 16, 4)
 end)
 
 -- Local Variables:
